@@ -1,0 +1,189 @@
+name: Create User Stories Issues
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/create-user-stories.yml'
+
+permissions:
+  issues: write
+
+jobs:
+  create-issues:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create labels
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const labels = [
+              { name: 'prioridade-must', color: 'd73a4a', description: 'Must have - Prioridade máxima' },
+              { name: 'prioridade-should', color: 'fbca04', description: 'Should have - Prioridade alta' },
+              { name: 'prioridade-could', color: '0075ca', description: 'Could have - Prioridade média' },
+            ];
+            for (const label of labels) {
+              try {
+                await github.rest.issues.createLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  ...label,
+                });
+                console.log(`Created label: ${label.name}`);
+              } catch (e) {
+                if (e.status === 422) {
+                  console.log(`Label already exists: ${label.name}`);
+                } else {
+                  throw e;
+                }
+              }
+            }
+
+      - name: Create user story issues
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const issues = [
+              {
+                title: '[MUST] EP01 - US01 - Cadastrar usuários com perfis diferentes',
+                body: 'Como admin, quero cadastrar usuários com perfis (aluno, monitor, professor, admin) para controlar acessos ao sistema.\n\n**Depende de:** #8, #10',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[MUST] EP01 - US02 - Fazer login com e-mail e senha',
+                body: 'Como usuário, quero fazer login com email e senha para acessar o sistema.\n\n**Depende de:** #8, #10',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[SHOULD] EP01 - US03 - Monitor editar perfil',
+                body: 'Como monitor, quero editar meu perfil (contato, disponibilidade) para manter meus dados atualizados.\n\n**Depende de:** US01',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[SHOULD] EP01 - US04 - Admin desativar usuário',
+                body: 'Como admin, quero desativar um usuário para remover o acesso de quem saiu do programa.\n\n**Depende de:** US01',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[COULD] EP01 - US05 - Usuário recuperar senha por email',
+                body: 'Como usuário, quero recuperar minha senha por email para não ficar bloqueado.\n\n**Depende de:** US02',
+                labels: ['prioridade-could'],
+              },
+              {
+                title: '[MUST] EP02 - US06 - Cadastrar disciplinas com nome, código e professor',
+                body: 'Como admin, quero cadastrar disciplinas com nome, código e professor para organizar o programa de monitoria.\n\n**Depende de:** #8, #10',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[MUST] EP02 - US07 - Professor indicar monitor para disciplina',
+                body: 'Como professor, quero indicar um aluno como monitor da minha disciplina para iniciar o vínculo de monitoria.\n\n**Depende de:** US01, US06',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[MUST] EP02 - US08 - Aprovar ou rejeitar indicações de monitor',
+                body: 'Como admin, quero aprovar ou rejeitar indicações de monitor para controlar quem entra no programa.\n\n**Depende de:** US07',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[SHOULD] EP02 - US09 - Listar monitorias ativas por disciplina',
+                body: 'Como admin, quero listar monitorias ativas por disciplina para ter visibilidade do programa.\n\n**Depende de:** US08',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[MUST] EP03 - US10 - Monitor criar horários de atendimento na agenda',
+                body: 'Como monitor, quero criar horários de atendimento na minha agenda para que os alunos saibam quando estou disponível.\n\n**Depende de:** US01, #8',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[MUST] EP03 - US11 - Aluno ver horários disponíveis do monitor',
+                body: 'Como aluno, quero ver os horários disponíveis de um monitor para escolher quando ser atendido.\n\n**Depende de:** US10',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[MUST] EP03 - US12 - Aluno agendar horário disponível',
+                body: 'Como aluno, quero agendar um horário disponível na agenda do monitor para garantir minha vaga.\n\n**Depende de:** US10, US11',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[MUST] EP03 - US13 - Monitor ver agenda com agendamentos confirmados',
+                body: 'Como monitor, quero ver minha agenda com os agendamentos confirmados para me organizar.\n\n**Depende de:** US10',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[SHOULD] EP03 - US14 - Aluno cancelar agendamento',
+                body: 'Como aluno, quero cancelar um agendamento para liberar o horário se não puder comparecer.\n\n**Depende de:** US12',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[SHOULD] EP03 - US15 - Monitor bloquear horário da agenda',
+                body: 'Como monitor, quero bloquear um horário na agenda para indicar indisponibilidade.\n\n**Depende de:** US10',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[MUST] EP04 - US16 - Monitor registrar presença ou ausência do aluno',
+                body: 'Como monitor, quero registrar presença ou ausência do aluno para manter o histórico de atendimentos.\n\n**Depende de:** US12',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[SHOULD] EP04 - US17 - Monitor registrar assunto tratado no atendimento',
+                body: 'Como monitor, quero registrar o assunto tratado no atendimento para documentar o que foi coberto.\n\n**Depende de:** US16',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[MUST] EP04 - US18 - Admin ver total de horas de monitoria por monitor no mês',
+                body: 'Como admin, quero ver o total de horas de monitoria por monitor no mês para controle de bolsas.\n\n**Depende de:** US16',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[SHOULD] EP04 - US19 - Professor ver histórico de atendimentos dos monitores',
+                body: 'Como professor, quero ver o histórico de atendimentos dos monitores da minha disciplina para acompanhar o programa.\n\n**Depende de:** US16',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[MUST] EP05 - US20 - Gerar relatório de participação por disciplina',
+                body: 'Como admin, quero gerar relatório de participação por disciplina para avaliar o impacto do programa.\n\n**Depende de:** US16, US18',
+                labels: ['prioridade-must'],
+              },
+              {
+                title: '[SHOULD] EP05 - US21 - Aluno receber confirmação ao agendar',
+                body: 'Como aluno, quero receber confirmação ao agendar para não esquecer o atendimento.\n\n**Depende de:** US12',
+                labels: ['prioridade-should'],
+              },
+              {
+                title: '[COULD] EP05 - US22 - Aluno receber lembrete antes do atendimento',
+                body: 'Como aluno, quero receber lembrete antes do atendimento para não perder o horário.\n\n**Depende de:** US21',
+                labels: ['prioridade-could'],
+              },
+              {
+                title: '[COULD] EP05 - US23 - Relatório mensal por email para professor',
+                body: 'Como professor, quero receber relatório mensal por email para acompanhar o programa sem precisar entrar no sistema.\n\n**Depende de:** US20',
+                labels: ['prioridade-could'],
+              },
+            ];
+
+            const existing = await github.paginate(github.rest.issues.listForRepo, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'all',
+              per_page: 100,
+            });
+            const existingTitles = new Set(existing.map(i => i.title));
+
+            for (const issue of issues) {
+              if (existingTitles.has(issue.title)) {
+                console.log(`Issue already exists: ${issue.title}`);
+                continue;
+              }
+              const created = await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: issue.title,
+                body: issue.body,
+                labels: issue.labels,
+              });
+              console.log(`Created issue #${created.data.number}: ${issue.title}`);
+            }
